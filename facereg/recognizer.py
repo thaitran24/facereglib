@@ -35,14 +35,14 @@ class Recognizer():
         self.is_db_build = True if db_represent_src != None else False
 
     
-    def find(self, img, distance_metric='cosine', threshold=0.3, top_rows=5):
+    def find(self, img, distance_metric='cosine', threshold=0.3, top_rows=5, force_detection=True):
         if not self.is_db_build:
             raise FileNotFoundError("There is no database representation file. Please build database first by calling: buildDatabase()") 
 
         representation_file = open(self.db_represent_src + 'representation.pkl', 'rb')
         representations = pickle.load(representation_file)
         df = pd.DataFrame(representations, columns=['identity', 'representation'])
-        face = self.represent(img)
+        face = self.represent(img, force_detection=force_detection)
         distances = []
         for index, row in tqdm(df.iterrows(), total=df.shape[0]):
             src_rep = row['representation']
@@ -63,7 +63,10 @@ class Recognizer():
         return df.head(n_rows)
 
 
-    def represent(self, img):
+    def represent(self, img, force_detection=True):
+        if not force_detection:
+            return img
+        
         self.input_size = self.model.layers[0].input_shape[0][1:3]
         faces, regions = detector.detect(img)
         if len(faces) == 0:
@@ -74,9 +77,9 @@ class Recognizer():
         return self.model.predict(face)[0].tolist()
     
 
-    def verify(self, img1, img2, threshold=0.2, distance_metric='cosine'):
-        face1 = self.represent(img1)
-        face2 = self.represent(img2)
+    def verify(self, img1, img2, threshold=0.2, distance_metric='cosine', force_detection=True):
+        face1 = self.represent(img1, force_detection=force_detection)
+        face2 = self.represent(img2, force_detection=force_detection)
             
         threshold = preprocess.findThreshold(self.model_name, distance_metric)
         if distance_metric == 'cosine':
@@ -127,9 +130,9 @@ class Recognizer():
         representation_file.close()
     
 
-    def recognize(self, img, threshold=0.3, distance_metric='cosine'):
+    def recognize(self, img, threshold=0.3, distance_metric='cosine', force_detection=True):
         if not self.is_db_build:
             raise FileNotFoundError("There is no database representation file. Please build database first by calling: buildDatabase()") 
 
-        df = self.find(img, distance_metric, threshold, top_rows=5)
+        df = self.find(img, distance_metric, threshold, top_rows=5, force_detection=force_detection)
         return df
