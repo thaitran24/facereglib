@@ -12,6 +12,7 @@ from keras.layers import MaxPooling2D
 from keras.layers import add
 from keras import backend as K
 import os
+import gdown
 
 def scaling(x, scale):
     return x * scale
@@ -528,7 +529,12 @@ def InceptionResNetV2(dimension = 128):
 def loadModel():
     facenet_model = InceptionResNetV2()
 
-    file_name = os.getcwd() + '/facereglib/weights/facenet_weights.h5'
-    facenet_model.load_weights(file_name)
+    file_path = os.getcwd() + '/facereglib/weights/'
+    file_name = 'facenet_weights.h5'
+    if not os.path.exists(file_path + file_name):
+        os.makedirs(file_path, exist_ok=True)
+        id = '185ESrrEKeV_p7RL4M4CSUGSj-HfkZJqa'
+        gdown.download(id=id, output=file_path + file_name, quiet=False)
+    facenet_model.load_weights(file_path + file_name)
 
     return facenet_model

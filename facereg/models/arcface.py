@@ -1,6 +1,7 @@
 import keras
 from keras.engine import training
 import os
+import gdown
 
 def loadModel():
 	base_model = ResNet34()
@@ -13,8 +14,14 @@ def loadModel():
 	embedding = keras.layers.BatchNormalization(momentum=0.9, epsilon=2e-5, name="embedding", scale=True)(arcface_model)
 	model = keras.models.Model(inputs, embedding, name=base_model.name)
 	
-	file_name = os.getcwd() + '/facereglib/weights/arcface_weights.h5'
-	model.load_weights(file_name)
+	file_path = os.getcwd() + '/facereglib/weights/'
+	file_name = 'arcface_weights.h5'
+	if not os.path.exists(file_path + file_name):
+		os.makedirs(file_path, exist_ok=True)
+		id = '1yjFN9P_RUEBTU_RjXdE3iJnTSqp-2ym3'
+		gdown.download(id=id, output=file_path + file_name, quiet=False)
+
+	model.load_weights(file_path + file_name)
 	return model
 
 

@@ -1,6 +1,7 @@
 from keras.models import Model, Sequential
 from keras.layers import Convolution2D, ZeroPadding2D, MaxPooling2D, Flatten, Dropout, Activation
 import os
+import gdown
 
 def loadModel():
     base_model = Sequential()
@@ -49,8 +50,13 @@ def loadModel():
     base_model.add(Flatten())
     base_model.add(Activation('softmax'))
 
-    file_name = os.getcwd() + '/facereglib/weights/vgg_face_weights.h5'
-    base_model.load_weights(file_name)
+    file_path = os.getcwd() + '/facereglib/weights/'
+    file_name = 'vgg_face_weights.h5'
+    if not os.path.exists(file_path + file_name):
+        os.makedirs(file_path, exist_ok=True)
+        id = '1UPvEypf7xiY5mOAn1qJwWj2mItTpdHVx'
+        gdown.download(id=id, output=file_path + file_name, quiet=False)
+    base_model.load_weights(file_path + file_name)
 
     vggface_model = Model(inputs=base_model.layers[0].input, outputs=base_model.layers[-2].output)
 

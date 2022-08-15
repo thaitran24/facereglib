@@ -5,6 +5,7 @@ from keras.layers import Dense, Lambda, Flatten, BatchNormalization
 from keras.layers import MaxPooling2D, AveragePooling2D
 from keras import backend as K
 import os
+import gdown
 
 def loadModel():
     input_layer = Input(shape=(96, 96, 3))
@@ -221,7 +222,12 @@ def loadModel():
     # Final Model
     model = Model(inputs=[input_layer], outputs=norm_layer)
 
-    file_name = os.getcwd() + '/facereglib/weights/openface_weights.h5'
-    model.load_weights(file_name)
+    file_path = os.getcwd() + '/facereglib/weights/'
+    file_name = 'openface_weights.h5'
+    if not os.path.exists(file_path + file_name):
+        os.makedirs(file_path, exist_ok=True)
+        id = '1mTNiUwFQscXmPPouBu_e1i9EmciBm5oA'
+        gdown.download(id=id, output=file_path + file_name, quiet=False)
+    model.load_weights(file_path + file_name)
 
     return model

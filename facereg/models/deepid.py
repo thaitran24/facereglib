@@ -1,6 +1,7 @@
 from keras.models import Model
 from keras.layers import Conv2D, Activation, Input, Add, MaxPooling2D, Flatten, Dense, Dropout
 import os
+import gdown
 
 def loadModel():
     input = Input(shape=(55, 47, 3))
@@ -29,7 +30,12 @@ def loadModel():
 
     deepid_model = Model(inputs=[input], outputs=y)
 
-    file_name = os.getcwd() + '/facereglib/weights/deepid_keras_weights.h5'
-    deepid_model.load_weights(file_name)
+    file_path = os.getcwd() + '/facereglib/weights/'
+    file_name = 'deepid_keras_weights.h5'
+    if not os.path.exists(file_path + file_name):
+        os.makedirs(file_path, exist_ok=True)
+        id = '1WW6Bxq_BQvgDNt0_q5b4LDILPssiylgU'
+        gdown.download(id=id, output=file_path + file_name, quiet=False)
+    deepid_model.load_weights(file_path + file_name)
 
     return deepid_model
