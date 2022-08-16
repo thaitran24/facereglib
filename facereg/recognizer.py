@@ -16,7 +16,7 @@ from facereglib.facereg.models import openface
 from facereglib.facereg.models import facenet
 
 class Recognizer():
-    def __init__(self, model_name, db_represent_src=None) -> None:
+    def __init__(self, model_name, db_represent_path=None) -> None:
         models = {
             'vggface': vggface.loadModel,
             'deepface': deepface.loadModel,
@@ -31,15 +31,15 @@ class Recognizer():
         
         self.model = base_model()
         self.model_name = model_name
-        self.db_represent_src = db_represent_src
-        self.is_db_build = True if db_represent_src != None else False
+        self.db_represent_path = db_represent_path
+        self.is_db_build = True if db_represent_path != None else False
 
     
     def find(self, img, distance_metric='cosine', threshold=0.3, top_rows=5, force_detection=True):
         if not self.is_db_build:
             raise FileNotFoundError("There is no database representation file. Please build database first by calling: buildDatabase()") 
 
-        representation_file = open(self.db_represent_src + 'representation.pkl', 'rb')
+        representation_file = open(self.db_represent_path + 'representation.pkl', 'rb')
         representations = pickle.load(representation_file)
         df = pd.DataFrame(representations, columns=['identity', 'representation'])
         face = self.represent(img, force_detection=force_detection)
@@ -93,14 +93,14 @@ class Recognizer():
         return True if dist <= threshold else False
     
 
-    def buildDatabase(self, db_path, src_path):
+    def buildDatabase(self, db_path, db_represent_path):
         if not os.path.isdir(db_path):
             print("Database path db_path - ", db_path, " not exist")
             return
 
         file_name = 'representation.pkl'
-        if os.path.exists(src_path + '/' + file_name):
-            f = open(src_path + '/' + file_name, 'rb')
+        if os.path.exists(db_represent_path + '/' + file_name):
+            f = open(db_represent_path + '/' + file_name, 'rb')
             representations = pickle.load(f)
         
         employees = []
@@ -122,9 +122,9 @@ class Recognizer():
             img = np.asarray(img)
             representations.append([employee, self.represent(img)])
         
-        Path(src_path).mkdir(parents=True, exist_ok=True)
-        self.db_represent_src = src_path + '/' + file_name
-        representation_file = open(self.db_represent_src, 'wb')
+        Path(db_represent_path).mkdir(parents=True, exist_ok=True)
+        self.db_represent_path = db_represent_path + '/' + file_name
+        representation_file = open(self.db_represent_path, 'wb')
         pickle.dump(representations, representation_file)
         self.is_db_build = True
         representation_file.close()
